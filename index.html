@@ -743,6 +743,13 @@
                     <li><strong>100%</strong> - Para 24 horas (completo)</li>
                 </ul>
                 <p>El ritmo de infusión y goteo se ajustan automáticamente según el porcentaje seleccionado.</p>
+                <p><strong>NOTA:</strong> Las ámpulas de electrolitos son de 10 ml de dilución. Las concentraciones utilizadas son:</p>
+                <ul>
+                    <li>Cloruro de sodio: 3.42 mEq/ml</li>
+                    <li>Cloruro de potasio: 2.5 mEq/ml</li>
+                    <li>Gluconato de calcio 10%: 1 ml/ml (10% = 100 mg/ml)</li>
+                    <li>Sulfato de magnesio 10%: 1 ml/ml (10% = 100 mg/ml)</li>
+                </ul>
             </div>
             
             <div class="info-section">
@@ -753,6 +760,7 @@
                     <li>Los frascos de dextrosa de 500ml pueden requerir dividir la hidratación cada 12 horas</li>
                     <li>Estos cálculos son para mantenimiento, no para corrección de déficits</li>
                     <li>Siempre verificar las necesidades individuales del paciente</li>
+                    <li>Las ámpulas de electrolitos son de 10 ml de dilución</li>
                 </ul>
             </div>
         </section>
@@ -826,6 +834,17 @@
         let savedPatients = JSON.parse(localStorage.getItem('savedPatients')) || [];
         let currentCalculation = null;
         let baseCalculation24h = null;
+        
+        // Concentraciones de electrolitos (mEq/ml)
+        const ELECTROLYTE_CONCENTRATIONS = {
+            sodium: 3.42,  // Cloruro de sodio 3.42 mEq/ml
+            potassium: 2.5, // Cloruro de potasio 2.5 mEq/ml
+            calcium: 1,     // Gluconato de calcio 10% (1 ml/ml)
+            magnesium: 1    // Sulfato de magnesio 10% (1 ml/ml)
+        };
+        
+        // Tamaño de las ámpulas (ml)
+        const AMPULE_SIZE = 10;
         
         // Inicializar la aplicación
         function initApp() {
@@ -1020,6 +1039,18 @@
             const calcium = Math.round(baseCalculation24h.calcium24h * factor);
             const magnesium = Math.round(baseCalculation24h.magnesium24h * factor);
             
+            // Calcular volúmenes de electrolitos en ml
+            const sodiumVolume = sodium / ELECTROLYTE_CONCENTRATIONS.sodium;
+            const potassiumVolume = potassium / ELECTROLYTE_CONCENTRATIONS.potassium;
+            const calciumVolume = calcium; // Ya está en ml
+            const magnesiumVolume = magnesium; // Ya está en ml
+            
+            // Calcular número de ámpulas necesarias
+            const sodiumAmpules = Math.ceil(sodiumVolume / AMPULE_SIZE);
+            const potassiumAmpules = Math.ceil(potassiumVolume / AMPULE_SIZE);
+            const calciumAmpules = Math.ceil(calciumVolume / AMPULE_SIZE);
+            const magnesiumAmpules = Math.ceil(magnesiumVolume / AMPULE_SIZE);
+            
             // Calcular ritmo de infusión
             const infusionRate = Math.round(totalDextrose / hours);
             
@@ -1036,6 +1067,14 @@
                 potassium,
                 calcium,
                 magnesium,
+                sodiumVolume,
+                potassiumVolume,
+                calciumVolume,
+                magnesiumVolume,
+                sodiumAmpules,
+                potassiumAmpules,
+                calciumAmpules,
+                magnesiumAmpules,
                 infusionRate,
                 dripRate
             };
@@ -1047,12 +1086,12 @@
             document.getElementById('scResult').textContent = baseCalculation24h.bodySurface.toFixed(2) + ' m²';
             document.getElementById('dextroseResult').textContent = totalDextrose + ' ml';
             
-            // Mostrar electrolitos en lista
+            // Mostrar electrolitos en lista con ámpulas
             document.getElementById('electrolytesResult').innerHTML = `
-                <li>Cloruro de sodio: ${sodium} mEq (${Math.round(sodium / 3.42)} ml de ámpula 3.42 mEq/ml)</li>
-                <li>Cloruro de potasio: ${potassium} mEq (${Math.round(potassium / 2.5)} ml de ámpula 2.5 mEq/ml)</li>
-                <li>Gluconato de calcio 10%: ${calcium} ml</li>
-                <li>Sulfato de magnesio 10%: ${magnesium} ml</li>
+                <li>Cloruro de sodio: ${sodium} mEq (${sodiumVolume.toFixed(1)} ml) - ${sodiumAmpules} ámpula(s) de 10 ml</li>
+                <li>Cloruro de potasio: ${potassium} mEq (${potassiumVolume.toFixed(1)} ml) - ${potassiumAmpules} ámpula(s) de 10 ml</li>
+                <li>Gluconato de calcio 10%: ${calcium} ml - ${calciumAmpules} ámpula(s) de 10 ml</li>
+                <li>Sulfato de magnesio 10%: ${magnesium} ml - ${magnesiumAmpules} ámpula(s) de 10 ml</li>
             `;
             
             document.getElementById('totalVolumeResult').textContent = totalDextrose + ' ml';
@@ -1194,4 +1233,4 @@
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
-</html>
+    </html>
